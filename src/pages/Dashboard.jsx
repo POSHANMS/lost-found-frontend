@@ -177,6 +177,18 @@ function Dashboard() {
         }
     }
 
+    const markResolved = async (itemId) => {
+        if (!window.confirm('Mark this item as resolved?')) return
+        try {
+            await api.put(`/items/${itemId}`, { is_resolved: true })
+            setPosts(prev => prev.map(p =>
+                p.id === itemId ? { ...p, is_resolved: true } : p
+            ))
+        } catch (err) {
+            console.error('Failed to mark resolved:', err)
+        }
+}
+
     const unreadCount = notifications.filter(n => !n.is_read).length
 
     if (loading) {
@@ -429,6 +441,23 @@ function Dashboard() {
                                                     Delete
                                                 </button>
                                             </div>
+                                            {!post.is_resolved && (
+                                                <button
+                                                    onClick={() => markResolved(post.id)}
+                                                    style={{
+                                                        background: 'rgba(46,213,115,0.1)',
+                                                        border: '1px solid rgba(46,213,115,0.3)',
+                                                        color: 'var(--found)',
+                                                        padding: '7px 14px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 500,
+                                                        cursor: 'pointer',
+                                                    }}
+                                                >
+                                                    ✓ Resolved
+                                                </button>
+                                            )}
                                         </motion.div>
                                     ))}
                                 </div>
