@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import api from '../utils/api'
+import heroImg from '../assets/hero.png'
 
 // animation variants — reusable animation configs
 const fadeUp = {
@@ -175,18 +176,25 @@ const stagger = {
                 </motion.div>
 
                 {/* Right — glass cards visual */}
+                {/* Right — hero image */}
                 <motion.div
                     initial={{ opacity: 0, x: 60 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.7, delay: 0.3 }}
-                    style={{ position: 'relative', height: '480px' }}
+                    style={{
+                        position: 'relative',
+                        height: '480px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
                 >
-                    {/* Glow blob */}
+                    {/* Glow blob behind image */}
                     <div style={{
                         position: 'absolute',
-                        width: '300px',
-                        height: '300px',
-                        background: 'radial-gradient(circle, rgba(245,166,35,0.15) 0%, transparent 70%)',
+                        width: '400px',
+                        height: '400px',
+                        background: 'radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%)',
                         borderRadius: '50%',
                         top: '50%',
                         left: '50%',
@@ -194,57 +202,26 @@ const stagger = {
                         pointerEvents: 'none',
                     }} />
 
-                    {/* Floating cards */}
-                    {[
-                        { top: '10%', left: '5%', emoji: '👜', title: 'Black Backpack', status: 'lost', delay: 0 },
-                        { top: '35%', right: '0%', emoji: '🔑', title: 'Room Keys', status: 'found', delay: 0.15 },
-                        { top: '62%', left: '10%', emoji: '💻', title: 'MacBook Pro', status: 'lost', delay: 0.3 },
-                        { top: '15%', right: '5%', emoji: '📱', title: 'iPhone 15', status: 'found', delay: 0.1 },
-                    ].map((card, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 + card.delay, duration: 0.5 }}
-                            style={{
-                                position: 'absolute',
-                                top: card.top,
-                                left: card.left,
-                                right: card.right,
-                                background: 'rgba(26, 26, 46, 0.8)',
-                                backdropFilter: 'blur(12px)',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                borderRadius: '16px',
-                                padding: '16px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                minWidth: '200px',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                            }}
-                        >
-                            <span style={{ fontSize: '28px' }}>{card.emoji}</span>
-                            <div>
-                                <div style={{
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    color: 'var(--text)',
-                                }}>
-                                    {card.title}
-                                </div>
-                                <div style={{
-                                    fontSize: '12px',
-                                    fontWeight: 600,
-                                    color: card.status === 'lost' ? 'var(--lost)' : 'var(--found)',
-                                    marginTop: '2px',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                }}>
-                                    {card.status}
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
+                    {/* Hero image */}
+                    <motion.img
+                        src={heroImg}
+                        alt="FindIt hero illustration"
+                        animate={{ y: [0, -12, 0] }}
+                        transition={{
+                            duration: 4,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                        }}
+                        style={{
+                            width: '100%',
+                            maxWidth: '480px',
+                            height: 'auto',
+                            objectFit: 'contain',
+                            position: 'relative',
+                            zIndex: 1,
+                            filter: 'drop-shadow(0 20px 60px rgba(245,166,35,0.15))',
+                        }}
+                    />
                 </motion.div>
             </section>
 
