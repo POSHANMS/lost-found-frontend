@@ -1,53 +1,62 @@
-// AuthContext.jsx — the global security desk for the entire app
-// Any component anywhere can ask "is user logged in?" from here
-import { createContext, useState, useEffect } from "react"
-import api from '../utils/api'
+import { createContext, useState, useEffect } from 'react'
+import api, { socket } from '../utils/api'
 
-// Step 1: create the context — think of this as creating the security desk
 export const AuthContext = createContext(null)
 
-// Step 2: create the Provider — this wraps the whole app and shares the data
 export function AuthProvider({ children }) {
-
-    // user = the logged in user object (name, email, role etc) or null if not logged in
     const [user, setUser] = useState(null)
-
-    // loading = true while we check if user is already logged in (on page refresh)
     const [loading, setLoading] = useState(true)
+    // notification count for navbar badge
+    const [unreadCount, setUnreadCount] = useState(0)
 
-    // When app first loads, check if user is already logged in
-    // We do this by calling /api/auth/me with the stored access token
     useEffect(() => {
         const token = localStorage.getItem('access_token')
-
         if (token) {
-            // if token exists, fetch the user's info from backend
             api.get('/auth/me')
-                .then(res => setUser(res.data.user))
+                .then(res => {
+                    setUser(res.data.user)
+                    connectSocket(res.data.user)
+                })
                 .catch(() => setUser(null))
                 .finally(() => setLoading(false))
         } else {
-            // no token = not logged in
             setLoading(false)
         }
-    }, [])  // empty [] = run only once when app first loads
-    
-    // login function — called after successful login API response
+    }, [])
+
+    const connectSocket = (userData) => {
+        // connect socket and join user's personal room
+        socket.connect()
+        socket.emit('join', { user_id: userData.id })
+
+        // listen for new notifications
+        socket.on('notification', (data) => {
+            setUnreadCount(prev => prev + 1)
+            // show browser notification if permission granted
+            if (Notification.permission === 'granted') {
+                new Notification('FindIt', { body: data.message })
+            }
+        })
+    }
+
     const login = (userData, token) => {
-        localStorage.setItem('access_token', token) // save token in browser
-        setUser(userData)                           // save user in state
+        localStorage.setItem('access_token', token)
+        setUser(userData)
+        connectSocket(userData)
     }
 
-    // logout function — clears everything
     const logout = () => {
-        localStorage.removeItem('access_token')     // delete token from browser
-        setUser(null)                               // clear user from state
-        api.post('auth/logout')                     // tell backend to revoke refresh token                
+        localStorage.removeItem('access_token')
+        setUser(null)
+        setUnreadCount(0)
+        socket.disconnect()
+        api.post('/auth/logout')
     }
 
-    // share these values with every component in the app
     return (
-        <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
+        <AuthContext.Provider value={{
+            user, setUser, login, logout, loading, unreadCount, setUnreadCount
+        }}>
             {children}
         </AuthContext.Provider>
     )

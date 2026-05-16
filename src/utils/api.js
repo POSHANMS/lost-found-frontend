@@ -16,3 +16,11 @@ api.interceptors.request.use((config) => {
 })
 
 export default api
+
+import { io } from 'socket.io-client'
+
+// create socket connection — connects to Flask backend
+export const socket = io(import.meta.env.VITE_API_URL, {
+    autoConnect: false,      // don't connect until user is logged in
+    transports: ['websocket'],
+})
