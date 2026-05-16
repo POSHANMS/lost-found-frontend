@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '../utils/api'
 import useAuth from '../hooks/useAuth'
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+// fix leaflet's default marker icon broken in Vite
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+})
 
 // categories must match exactly what your backend allows
 const CATEGORIES = [
@@ -12,6 +23,165 @@ const CATEGORIES = [
 
 // which step the user is on — 3 total
 const STEPS = ['Item Details', 'Photo & Location', 'Verification']
+
+// MapPicker — handles click events on the map
+function ClickHandler({ onLocationSelect }) {
+    useMapEvents({
+        click(e) {
+            onLocationSelect(e.latlng.lat, e.latlng.lng)
+        },
+    })
+    return null
+}
+
+function MapPicker({ onLocationSelect, selectedLat, selectedLng }) {
+    const defaultCenter = [12.9716, 77.5946]
+    const [searchQuery, setSearchQuery] = useState('')
+    const [searching, setSearching] = useState(false)
+    const [mapCenter, setMapCenter] = useState(defaultCenter)
+    const [zoom, setZoom] = useState(13)
+    const mapRef = useRef(null)
+
+    // search for a place by name
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) return
+        setSearching(true)
+        try {
+            // use OpenStreetMap Nominatim free geocoding API
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`
+            )
+            const data = await res.json()
+            if (data.length > 0) {
+                const lat = parseFloat(data[0].lat)
+                const lng = parseFloat(data[0].lon)
+                setMapCenter([lat, lng])
+                setZoom(16)
+                onLocationSelect(lat, lng)
+                // move the map to the new location
+                if (mapRef.current) {
+                    mapRef.current.setView([lat, lng], 16)
+                }
+            } else {
+                alert('Place not found. Try a different search.')
+            }
+        } catch (err) {
+            alert('Search failed. Check your connection.')
+        } finally {
+            setSearching(false)
+        }
+    }
+
+    // get user's current GPS location
+    const handleMyLocation = () => {
+        if (!navigator.geolocation) {
+            alert('Geolocation not supported by your browser')
+            return
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude
+                const lng = pos.coords.longitude
+                setMapCenter([lat, lng])
+                setZoom(17)
+                onLocationSelect(lat, lng)
+                if (mapRef.current) {
+                    mapRef.current.setView([lat, lng], 17)
+                }
+            },
+            () => alert('Could not get your location. Please allow location access.')
+        )
+    }
+
+    return (
+        <div>
+            {/* Search bar */}
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                marginBottom: '10px',
+            }}>
+                <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                    placeholder="Search for a place... e.g. Library, Hostel Block A"
+                    style={{
+                        flex: 1,
+                        background: 'var(--surface2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        fontSize: '14px',
+                        color: 'var(--text)',
+                        outline: 'none',
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
+                <button
+                    type="button"
+                    onClick={handleSearch}
+                    disabled={searching}
+                    style={{
+                        background: 'var(--accent)',
+                        color: '#0F0F1A',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '10px 16px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: searching ? 'not-allowed' : 'pointer',
+                    }}
+                >
+                    {searching ? '...' : '🔍'}
+                </button>
+                <button
+                    type="button"
+                    onClick={handleMyLocation}
+                    style={{
+                        background: 'var(--surface2)',
+                        color: 'var(--text)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    📍 My Location
+                </button>
+            </div>
+
+            {/* Map */}
+            <div style={{
+                height: '260px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: '1px solid var(--border)',
+            }}>
+                <MapContainer
+                    center={mapCenter}
+                    zoom={zoom}
+                    style={{ height: '100%', width: '100%' }}
+                    ref={mapRef}
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="© OpenStreetMap"
+                    />
+                    <ClickHandler onLocationSelect={onLocationSelect} />
+                    {selectedLat && selectedLng && (
+                        <Marker position={[selectedLat, selectedLng]} />
+                    )}
+                </MapContainer>
+            </div>
+        </div>
+    )
+}
 
 function PostItem() {
     const [uploadingImage, setUploadingImage] = useState(false)
@@ -567,28 +737,32 @@ function PostItem() {
                                     />
                                 </div>
 
-                                {/* Map placeholder — Leaflet comes after Cloudinary */}
+                                {/* Leaflet Map */}
                                 <div>
                                     <label style={labelStyle}>Pin on Map (optional)</label>
-                                    <div style={{
-                                        height: '200px',
-                                        background: 'var(--surface2)',
-                                        borderRadius: '12px',
-                                        border: '1px solid var(--border)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexDirection: 'column',
-                                        gap: '8px',
+                                    <p style={{
+                                        fontSize: '13px',
+                                        color: 'var(--muted)',
+                                        marginBottom: '10px',
                                     }}>
-                                        <span style={{ fontSize: '32px' }}>🗺️</span>
+                                        Click on the map to drop a pin at the exact location
+                                    </p>
+                                    <MapPicker
+                                            onLocationSelect={(lat, lng) => {
+                                                setForm(prev => ({ ...prev, latitude: lat, longitude: lng }))
+                                            }}
+                                            selectedLat={form.latitude}
+                                            selectedLng={form.longitude}
+                                        />
+                                    {form.latitude && (
                                         <p style={{
-                                            color: 'var(--muted)',
-                                            fontSize: '13px',
+                                            fontSize: '12px',
+                                            color: 'var(--found)',
+                                            marginTop: '8px',
                                         }}>
-                                            Map integration coming soon
+                                            ✓ Location pinned: {form.latitude.toFixed(4)}, {form.longitude.toFixed(4)}
                                         </p>
-                                    </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}
