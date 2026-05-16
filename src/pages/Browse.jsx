@@ -64,7 +64,7 @@ function ItemCard({ item }) {
                     {/* Image */}
                     <div style={{
                         height: '180px',
-                        background: 'var(--surface2)',
+                        background: '#ffffff',
                         position: 'relative',
                         overflow: 'hidden',
                     }}>

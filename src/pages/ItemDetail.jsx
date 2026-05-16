@@ -150,10 +150,9 @@ function ItemDetail() {
                         overflow: 'hidden',
                     }}>
 
-                        {/* Image section */}
                         <div style={{
                             height: '320px',
-                            background: 'var(--surface2)',
+                            background: '#ffffff',
                             position: 'relative',
                         }}>
                             {item.image_url ? (

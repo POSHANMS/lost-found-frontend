@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '../utils/api'
@@ -14,6 +14,8 @@ const CATEGORIES = [
 const STEPS = ['Item Details', 'Photo & Location', 'Verification']
 
 function PostItem() {
+    const [uploadingImage, setUploadingImage] = useState(false)
+    const fileInputRef = useRef(null)
     const navigate = useNavigate()
     const { user } = useAuth()
 
@@ -86,6 +88,9 @@ function PostItem() {
             if (form.latitude) formData.append('latitude', form.latitude)
             if (form.longitude) formData.append('longitude', form.longitude)
 
+            if (form.image_url) formData.append('image_url', form.image_url)
+            if (form.image_public_id) formData.append('image_public_id', form.image_public_id)
+
             await api.post('/items/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             })
@@ -96,6 +101,55 @@ function PostItem() {
                     'Failed to post item')
         } finally {
             setLoading(false)
+        }
+    }
+
+    // opens the file picker when user clicks the upload area
+    const handleImageUpload = () => {
+        if (!uploadingImage) fileInputRef.current.click()
+    }
+
+    // called when user picks a file
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+
+        setUploadingImage(true)
+
+        try {
+            // build FormData for Cloudinary
+            const cloudinaryForm = new FormData()
+            cloudinaryForm.append('file', file)
+            cloudinaryForm.append(
+                'upload_preset',
+                import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+            )
+
+            // send directly to Cloudinary — NOT to Flask
+            const res = await fetch(
+                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                {
+                    method: 'POST',
+                    body: cloudinaryForm,
+                }
+            )
+
+            const data = await res.json()
+
+            if (data.secure_url) {
+                // save the URL and public_id in our form state
+                setForm(prev => ({
+                    ...prev,
+                    image_url: data.secure_url,
+                    image_public_id: data.public_id,
+                }))
+            } else {
+                setError('Image upload failed. Try again.')
+            }
+        } catch (err) {
+            setError('Image upload failed. Check your connection.')
+        } finally {
+            setUploadingImage(false)
         }
     }
 
@@ -364,60 +418,138 @@ function PostItem() {
                                 transition={{ duration: 0.25 }}
                             >
                                 {/* Image upload placeholder — Cloudinary comes next */}
+                                {/* Cloudinary Image Upload */}
                                 <div style={{ marginBottom: '24px' }}>
                                     <label style={labelStyle}>Item Photo</label>
-                                    <div style={{
-                                        border: '2px dashed var(--border)',
-                                        borderRadius: '12px',
-                                        padding: '40px',
-                                        textAlign: 'center',
-                                        background: 'var(--surface2)',
-                                        cursor: 'pointer',
-                                    }}>
-                                        {form.image_url ? (
-                                            <div>
-                                                <img
-                                                    src={form.image_url}
-                                                    alt="uploaded"
+
+                                    {form.image_url ? (
+                                        // show uploaded image with option to change
+                                        <div style={{
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '12px',
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                        }}>
+                                            <img
+                                                src={form.image_url}
+                                                alt="uploaded"
+                                                style={{
+                                                    width: '100%',
+                                                    maxHeight: '240px',
+                                                    objectFit: 'cover',
+                                                    display: 'block',
+                                                }}
+                                            />
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '12px',
+                                                right: '12px',
+                                                display: 'flex',
+                                                gap: '8px',
+                                            }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setForm({
+                                                        ...form,
+                                                        image_url: '',
+                                                        image_public_id: ''
+                                                    })}
                                                     style={{
-                                                        width: '100%',
-                                                        maxHeight: '200px',
-                                                        objectFit: 'cover',
+                                                        background: 'rgba(255,71,87,0.9)',
+                                                        color: '#fff',
+                                                        border: 'none',
+                                                        padding: '6px 14px',
                                                         borderRadius: '8px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
                                                     }}
-                                                />
-                                                <p style={{
-                                                    color: 'var(--found)',
-                                                    marginTop: '12px',
-                                                    fontSize: '13px',
-                                                }}>
-                                                    ✓ Image uploaded
-                                                </p>
+                                                >
+                                                    Remove
+                                                </button>
                                             </div>
-                                        ) : (
-                                            <div>
-                                                <div style={{
-                                                    fontSize: '40px',
-                                                    marginBottom: '12px',
-                                                }}>
-                                                    📷
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '12px',
+                                                left: '12px',
+                                                background: 'rgba(46,213,115,0.9)',
+                                                color: '#fff',
+                                                padding: '4px 12px',
+                                                borderRadius: '100px',
+                                                fontSize: '12px',
+                                                fontWeight: 700,
+                                            }}>
+                                                ✓ Uploaded
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // upload area
+                                        <div
+                                            onClick={handleImageUpload}
+                                            style={{
+                                                border: '2px dashed var(--border)',
+                                                borderRadius: '12px',
+                                                padding: '48px 24px',
+                                                textAlign: 'center',
+                                                background: 'var(--surface2)',
+                                                cursor: uploadingImage ? 'not-allowed' : 'pointer',
+                                                transition: 'border-color 0.2s',
+                                            }}
+                                            onMouseEnter={e => {
+                                                if (!uploadingImage)
+                                                    e.currentTarget.style.borderColor = 'var(--accent)'
+                                            }}
+                                            onMouseLeave={e => {
+                                                e.currentTarget.style.borderColor = 'var(--border)'
+                                            }}
+                                        >
+                                            {uploadingImage ? (
+                                                <div>
+                                                    <div style={{
+                                                        fontSize: '32px',
+                                                        marginBottom: '12px',
+                                                    }}>⏳</div>
+                                                    <p style={{
+                                                        color: 'var(--accent)',
+                                                        fontSize: '14px',
+                                                        fontWeight: 600,
+                                                    }}>
+                                                        Uploading to Cloudinary...
+                                                    </p>
                                                 </div>
-                                                <p style={{
-                                                    color: 'var(--muted)',
-                                                    fontSize: '14px',
-                                                    marginBottom: '4px',
-                                                }}>
-                                                    Cloudinary upload coming in next step
-                                                </p>
-                                                <p style={{
-                                                    color: 'var(--muted)',
-                                                    fontSize: '12px',
-                                                }}>
-                                                    Image is optional — you can post without one
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
+                                            ) : (
+                                                <div>
+                                                    <div style={{
+                                                        fontSize: '40px',
+                                                        marginBottom: '12px',
+                                                    }}>📷</div>
+                                                    <p style={{
+                                                        color: 'var(--text)',
+                                                        fontSize: '15px',
+                                                        fontWeight: 600,
+                                                        marginBottom: '6px',
+                                                    }}>
+                                                        Click to upload photo
+                                                    </p>
+                                                    <p style={{
+                                                        color: 'var(--muted)',
+                                                        fontSize: '13px',
+                                                    }}>
+                                                        JPG, PNG up to 10MB · Optional
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* hidden file input */}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={handleFileChange}
+                                    />
                                 </div>
 
                                 {/* Location name */}
