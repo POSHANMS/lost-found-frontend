@@ -63,8 +63,8 @@ function ItemCard({ item }) {
                 >
                     {/* Image */}
                     <div style={{
-                        height: '180px',
-                        background: '#ffffff',
+                        height: item.image_url ? '220px' : '160px',
+                        background: item.image_url ? '#ffffff' : 'var(--surface2)',
                         position: 'relative',
                         overflow: 'hidden',
                     }}>
@@ -180,6 +180,7 @@ function Browse() {
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
+    const [searchInput, setSearchInput] = useState('')
     const [status, setStatus] = useState('')
     const [category, setCategory] = useState('')
     const [page, setPage] = useState(1)
@@ -193,7 +194,16 @@ function Browse() {
 
     useEffect(() => {
         fetchItems()
-    }, [status, category, page])
+    }, [status, category, page, search])
+
+    // debounce search — wait 500ms after user stops typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(searchInput)
+            setPage(1)
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [searchInput])
 
     const fetchItems = async () => {
         setLoading(true)
@@ -217,8 +227,8 @@ function Browse() {
 
     const handleSearch = (e) => {
         e.preventDefault()
+        setSearch(searchInput)
         setPage(1)
-        fetchItems()
     }
 
     const handleFilterChange = (type, value) => {
@@ -261,8 +271,8 @@ function Browse() {
             }}>
                 <input
                     type="text"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
                     placeholder="Search by title..."
                     style={{
                         flex: 1,
@@ -364,20 +374,27 @@ function Browse() {
             {/* Items Grid */}
             {loading ? (
                 <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                    gap: '20px',
+                    columns: '4 240px',
+                    columnGap: '20px',
                 }}>
-                    {[...Array(8)].map((_, i) => <ItemSkeleton key={i} />)}
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} style={{ breakInside: 'avoid', marginBottom: '20px' }}>
+                            <ItemSkeleton />
+                        </div>
+                    ))}
                 </div>
             ) : items.length === 0 ? (
                 // Empty state
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.3 }}
                     style={{
-                        textAlign: 'center',
-                        padding: '80px 24px',
+                        breakInside: 'avoid',
+                        marginBottom: '20px',
                     }}
                 >
                     <div style={{ fontSize: '64px', marginBottom: '16px' }}>🔍</div>

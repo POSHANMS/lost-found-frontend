@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import api from '../utils/api'
 import heroImg from '../assets/hero.png'
 
-// animation variants — reusable animation configs
 const fadeUp = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0 }
@@ -14,7 +13,7 @@ const stagger = {
     visible: { transition: { staggerChildren: 0.15 } }
 }
 
-    function Landing() {
+function Landing() {
     const [stats, setStats] = useState({
         total_items: 0,
         resolved_items: 0,
@@ -22,11 +21,11 @@ const stagger = {
     })
 
     useEffect(() => {
-        // fetch real stats from backend
         api.get('/admin/stats')
             .then(res => setStats(res.data))
-            .catch(() => {}) // fail silently — landing page still works without stats
+            .catch(() => {})
     }, [])
+
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
@@ -34,7 +33,7 @@ const stagger = {
             <section style={{
                 maxWidth: '1200px',
                 margin: '0 auto',
-                padding: '80px 24px 60px',
+                padding: '100px 24px 80px',
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '60px',
@@ -59,28 +58,23 @@ const stagger = {
                             borderRadius: '100px',
                             fontSize: '13px',
                             fontWeight: 600,
-                            marginBottom: '24px',
+                            marginBottom: '28px',
                         }}>
                             🎓 Built for campus life
                         </span>
                     </motion.div>
 
-                    {/* Headline */}
+                    {/* Headline — BIGGER */}
                     <motion.h1 variants={fadeUp} style={{
-                        fontSize: 'clamp(36px, 5vw, 60px)',
+                        fontSize: 'clamp(48px, 6vw, 76px)',
                         fontWeight: 800,
-                        lineHeight: 1.1,
-                        letterSpacing: '-1.5px',
-                        marginBottom: '20px',
+                        lineHeight: 1.05,
+                        letterSpacing: '-2px',
+                        marginBottom: '24px',
                     }}>
                         Lost something?<br />
-                        <span style={{ color: 'var(--accent)' }}>We'll help</span>{' '}
-                        <span style={{
-                            background: 'linear-gradient(135deg, var(--found), #00B4D8)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                        }}>
-                            find it.
+                        <span style={{ color: 'var(--accent)' }}>
+                            We'll find it.
                         </span>
                     </motion.h1>
 
@@ -88,12 +82,13 @@ const stagger = {
                     <motion.p variants={fadeUp} style={{
                         fontSize: '18px',
                         color: 'var(--muted)',
-                        lineHeight: 1.7,
+                        lineHeight: 1.8,
                         marginBottom: '40px',
-                        maxWidth: '480px',
+                        maxWidth: '440px',
                     }}>
-                        The smartest way to report, find, and return lost items on campus.
-                        Connect with your community and get your stuff back.
+                        Report lost or found items on campus.
+                        Connect with your community and get
+                        your belongings back — fast.
                     </motion.p>
 
                     {/* CTA Buttons */}
@@ -110,9 +105,9 @@ const stagger = {
                                     background: 'var(--accent)',
                                     color: '#0F0F1A',
                                     border: 'none',
-                                    padding: '14px 28px',
+                                    padding: '16px 32px',
                                     borderRadius: '12px',
-                                    fontSize: '15px',
+                                    fontSize: '16px',
                                     fontWeight: 700,
                                     cursor: 'pointer',
                                     display: 'flex',
@@ -131,9 +126,9 @@ const stagger = {
                                     background: 'transparent',
                                     color: 'var(--text)',
                                     border: '1px solid var(--border)',
-                                    padding: '14px 28px',
+                                    padding: '16px 32px',
                                     borderRadius: '12px',
-                                    fontSize: '15px',
+                                    fontSize: '16px',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                 }}
@@ -143,30 +138,34 @@ const stagger = {
                         </Link>
                     </motion.div>
 
-                    {/* Stats */}
+                    {/* Stats — BIGGER */}
                     <motion.div variants={fadeUp} style={{
                         display: 'flex',
-                        gap: '32px',
-                        marginTop: '48px',
+                        gap: '40px',
+                        marginTop: '56px',
+                        paddingTop: '32px',
+                        borderTop: '1px solid var(--border)',
                     }}>
                         {[
-                        { number: stats.resolved_items || 0, label: 'Items Returned' },
-                        { number: stats.total_users || 0, label: 'Students' },
-                        { number: stats.total_items || 0, label: 'Items Posted' },
-                    ].map(stat => (
+                            { number: stats.resolved_items || '10+', label: 'Items Returned' },
+                            { number: stats.total_users || '50+', label: 'Students' },
+                            { number: stats.total_items || '25+', label: 'Items Posted' },
+                        ].map(stat => (
                             <div key={stat.label}>
                                 <div style={{
-                                    fontSize: '24px',
+                                    fontSize: '36px',
                                     fontWeight: 800,
                                     color: 'var(--accent)',
                                     fontFamily: 'Plus Jakarta Sans, sans-serif',
+                                    letterSpacing: '-1px',
                                 }}>
                                     {stat.number}
                                 </div>
                                 <div style={{
                                     fontSize: '13px',
                                     color: 'var(--muted)',
-                                    marginTop: '2px',
+                                    marginTop: '4px',
+                                    fontWeight: 500,
                                 }}>
                                     {stat.label}
                                 </div>
@@ -175,7 +174,6 @@ const stagger = {
                     </motion.div>
                 </motion.div>
 
-                {/* Right — glass cards visual */}
                 {/* Right — hero image */}
                 <motion.div
                     initial={{ opacity: 0, x: 60 }}
@@ -183,18 +181,18 @@ const stagger = {
                     transition={{ duration: 0.7, delay: 0.3 }}
                     style={{
                         position: 'relative',
-                        height: '480px',
+                        height: '520px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}
                 >
-                    {/* Glow blob behind image */}
+                    {/* Glow blob */}
                     <div style={{
                         position: 'absolute',
-                        width: '400px',
-                        height: '400px',
-                        background: 'radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%)',
+                        width: '500px',
+                        height: '500px',
+                        background: 'radial-gradient(circle, rgba(245,166,35,0.1) 0%, transparent 70%)',
                         borderRadius: '50%',
                         top: '50%',
                         left: '50%',
@@ -205,8 +203,8 @@ const stagger = {
                     {/* Hero image */}
                     <motion.img
                         src={heroImg}
-                        alt="FindIt hero illustration"
-                        animate={{ y: [0, -12, 0] }}
+                        alt="FindIt hero"
+                        animate={{ y: [0, -16, 0] }}
                         transition={{
                             duration: 4,
                             repeat: Infinity,
@@ -214,12 +212,12 @@ const stagger = {
                         }}
                         style={{
                             width: '100%',
-                            maxWidth: '480px',
+                            maxWidth: '500px',
                             height: 'auto',
                             objectFit: 'contain',
                             position: 'relative',
                             zIndex: 1,
-                            filter: 'drop-shadow(0 20px 60px rgba(245,166,35,0.15))',
+                            filter: 'drop-shadow(0 24px 80px rgba(245,166,35,0.2))',
                         }}
                     />
                 </motion.div>
@@ -236,17 +234,23 @@ const stagger = {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
-                    style={{ textAlign: 'center', marginBottom: '60px' }}
+                    style={{ textAlign: 'center', marginBottom: '64px' }}
                 >
                     <h2 style={{
-                        fontSize: '36px',
+                        fontSize: '48px',
                         fontWeight: 800,
-                        letterSpacing: '-0.5px',
-                        marginBottom: '12px',
+                        letterSpacing: '-1px',
+                        marginBottom: '16px',
                     }}>
                         How it works
                     </h2>
-                    <p style={{ color: 'var(--muted)', fontSize: '16px' }}>
+                    <p style={{
+                        color: 'var(--muted)',
+                        fontSize: '17px',
+                        maxWidth: '400px',
+                        margin: '0 auto',
+                        lineHeight: 1.6,
+                    }}>
                         Three simple steps to reunite with your belongings
                     </p>
                 </motion.div>
@@ -262,18 +266,24 @@ const stagger = {
                             emoji: '📝',
                             title: 'Report It',
                             desc: 'Post a lost or found item with photos, location, and description in under 2 minutes.',
+                            color: 'rgba(245,166,35,0.08)',
+                            border: 'rgba(245,166,35,0.2)',
                         },
                         {
                             step: '02',
                             emoji: '🔍',
                             title: 'Browse & Match',
                             desc: 'Search through reported items. Filter by category, location, or date to find your match.',
+                            color: 'rgba(46,213,115,0.06)',
+                            border: 'rgba(46,213,115,0.15)',
                         },
                         {
                             step: '03',
                             emoji: '🤝',
                             title: 'Claim & Reunite',
                             desc: 'Submit a claim with proof. The owner reviews and approves. Item returned.',
+                            color: 'rgba(0,180,216,0.06)',
+                            border: 'rgba(0,180,216,0.15)',
                         },
                     ].map((item, i) => (
                         <motion.div
@@ -282,44 +292,60 @@ const stagger = {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.15, duration: 0.5 }}
-                            whileHover={{ y: -4 }}
+                            whileHover={{ y: -6 }}
                             style={{
-                                background: 'var(--surface)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '20px',
-                                padding: '32px',
+                                background: item.color,
+                                border: `1px solid ${item.border}`,
+                                borderRadius: '24px',
+                                padding: '40px 32px',
                                 position: 'relative',
                                 overflow: 'hidden',
                             }}
                         >
-                            {/* Step number watermark */}
+                            {/* Step number — more visible */}
                             <div style={{
                                 position: 'absolute',
-                                top: '16px',
-                                right: '20px',
-                                fontSize: '48px',
+                                top: '20px',
+                                right: '24px',
+                                fontSize: '56px',
                                 fontWeight: 900,
-                                color: 'rgba(255,255,255,0.04)',
+                                color: 'rgba(255,255,255,0.06)',
                                 fontFamily: 'Plus Jakarta Sans, sans-serif',
                                 lineHeight: 1,
                             }}>
                                 {item.step}
                             </div>
 
-                            <div style={{ fontSize: '36px', marginBottom: '16px' }}>
+                            {/* Step pill */}
+                            <div style={{
+                                display: 'inline-block',
+                                background: 'rgba(255,255,255,0.06)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'var(--muted)',
+                                padding: '4px 12px',
+                                borderRadius: '100px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                marginBottom: '20px',
+                                letterSpacing: '1px',
+                            }}>
+                                STEP {item.step}
+                            </div>
+
+                            <div style={{ fontSize: '40px', marginBottom: '16px' }}>
                                 {item.emoji}
                             </div>
                             <h3 style={{
-                                fontSize: '18px',
+                                fontSize: '22px',
                                 fontWeight: 700,
-                                marginBottom: '10px',
+                                marginBottom: '12px',
                                 color: 'var(--text)',
                             }}>
                                 {item.title}
                             </h3>
                             <p style={{
                                 color: 'var(--muted)',
-                                fontSize: '14px',
+                                fontSize: '15px',
                                 lineHeight: 1.7,
                             }}>
                                 {item.desc}
@@ -332,7 +358,7 @@ const stagger = {
             {/* ── CTA BANNER ── */}
             <section style={{
                 maxWidth: '1200px',
-                margin: '0 auto 80px',
+                margin: '0 auto 100px',
                 padding: '0 24px',
             }}>
                 <motion.div
@@ -340,27 +366,44 @@ const stagger = {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     style={{
-                        background: 'linear-gradient(135deg, rgba(245,166,35,0.15) 0%, rgba(46,213,115,0.1) 100%)',
-                        border: '1px solid rgba(245,166,35,0.2)',
-                        borderRadius: '24px',
-                        padding: '60px',
+                        background: 'linear-gradient(135deg, rgba(245,166,35,0.2) 0%, rgba(46,213,115,0.12) 50%, rgba(0,180,216,0.1) 100%)',
+                        border: '1px solid rgba(245,166,35,0.25)',
+                        borderRadius: '28px',
+                        padding: '80px 60px',
                         textAlign: 'center',
+                        position: 'relative',
+                        overflow: 'hidden',
                     }}
                 >
+                    {/* Background glow */}
+                    <div style={{
+                        position: 'absolute',
+                        width: '600px',
+                        height: '300px',
+                        background: 'radial-gradient(ellipse, rgba(245,166,35,0.08) 0%, transparent 70%)',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        pointerEvents: 'none',
+                    }} />
+
                     <h2 style={{
-                        fontSize: '36px',
+                        fontSize: '52px',
                         fontWeight: 800,
-                        marginBottom: '12px',
-                        letterSpacing: '-0.5px',
+                        marginBottom: '16px',
+                        letterSpacing: '-1.5px',
+                        position: 'relative',
                     }}>
                         Lost something today?
                     </h2>
                     <p style={{
                         color: 'var(--muted)',
-                        fontSize: '16px',
-                        marginBottom: '32px',
+                        fontSize: '18px',
+                        marginBottom: '40px',
+                        position: 'relative',
                     }}>
-                        Join thousands of students already using FindIt on campus.
+                        Join students already using FindIt on campus.
+                        It's free, fast, and it works.
                     </p>
                     <Link to="/register" style={{ textDecoration: 'none' }}>
                         <motion.button
@@ -370,14 +413,15 @@ const stagger = {
                                 background: 'var(--accent)',
                                 color: '#0F0F1A',
                                 border: 'none',
-                                padding: '16px 36px',
-                                borderRadius: '12px',
-                                fontSize: '16px',
+                                padding: '18px 44px',
+                                borderRadius: '14px',
+                                fontSize: '17px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
+                                position: 'relative',
                             }}
                         >
-                            Get Started — It's Free
+                            Get Started — It's Free →
                         </motion.button>
                     </Link>
                 </motion.div>

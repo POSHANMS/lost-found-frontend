@@ -1,0 +1,10 @@
+<svg width="120" height="36" viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="36" height="36" rx="9" fill="#F5A623"/>
+  <circle cx="18" cy="18" r="11" stroke="#0F0F1A" stroke-width="1.8" opacity="0.3"/>
+  <circle cx="18" cy="18" r="7" stroke="#0F0F1A" stroke-width="1.8" opacity="0.5"/>
+  <circle cx="18" cy="18" r="2.5" fill="#0F0F1A"/>
+  <line x1="18" y1="18" x2="25" y2="13" stroke="#0F0F1A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M23 13.5 A11 11 0 0 1 29 18" fill="none" stroke="#0F0F1A" stroke-width="3.5" stroke-linecap="round" opacity="0.35"/>
+  <text x="44" y="24" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="18" fill="#E8E8F0" letter-spacing="-0.5">Find</text>
+  <text x="84" y="24" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="18" fill="#F5A623" letter-spacing="-0.5">It</text>
+</svg>
