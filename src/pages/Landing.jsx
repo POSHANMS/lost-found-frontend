@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import api from '../utils/api'
 
 // animation variants — reusable animation configs
 const fadeUp = {
@@ -11,7 +13,19 @@ const stagger = {
     visible: { transition: { staggerChildren: 0.15 } }
 }
 
-function Landing() {
+    function Landing() {
+    const [stats, setStats] = useState({
+        total_items: 0,
+        resolved_items: 0,
+        total_users: 0,
+    })
+
+    useEffect(() => {
+        // fetch real stats from backend
+        api.get('/admin/stats')
+            .then(res => setStats(res.data))
+            .catch(() => {}) // fail silently — landing page still works without stats
+    }, [])
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
@@ -135,10 +149,10 @@ function Landing() {
                         marginTop: '48px',
                     }}>
                         {[
-                            { number: '500+', label: 'Items Returned' },
-                            { number: '2k+', label: 'Students' },
-                            { number: '95%', label: 'Success Rate' },
-                        ].map(stat => (
+                        { number: stats.resolved_items || 0, label: 'Items Returned' },
+                        { number: stats.total_users || 0, label: 'Students' },
+                        { number: stats.total_items || 0, label: 'Items Posted' },
+                    ].map(stat => (
                             <div key={stat.label}>
                                 <div style={{
                                     fontSize: '24px',
