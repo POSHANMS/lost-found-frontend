@@ -3,6 +3,16 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '../utils/api'
 import useAuth from '../hooks/useAuth'
+import { MapContainer, TileLayer, Marker } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+})
 
 function ItemDetail() {
     const { id } = useParams()        // grabs the :id from the URL
@@ -311,6 +321,42 @@ function ItemDetail() {
                                     {item.description}
                                 </p>
                             </div>
+
+                            {/* Map — only show if coordinates exist */}
+                            {item.latitude && item.longitude && (
+                                <div style={{ marginBottom: '32px' }}>
+                                    <h3 style={{
+                                        fontSize: '13px',
+                                        fontWeight: 600,
+                                        color: 'var(--muted)',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.5px',
+                                        marginBottom: '10px',
+                                    }}>
+                                        Location on Map
+                                    </h3>
+                                    <div style={{
+                                        height: '220px',
+                                        borderRadius: '12px',
+                                        overflow: 'hidden',
+                                        border: '1px solid var(--border)',
+                                    }}>
+                                        <MapContainer
+                                            center={[item.latitude, item.longitude]}
+                                            zoom={15}
+                                            style={{ height: '100%', width: '100%' }}
+                                            dragging={true}
+                                            scrollWheelZoom={false}
+                                        >
+                                            <TileLayer
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                attribution="© OpenStreetMap"
+                                            />
+                                            <Marker position={[item.latitude, item.longitude]} />
+                                        </MapContainer>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Claim button */}
                             {canClaim && (
