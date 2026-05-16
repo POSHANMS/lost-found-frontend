@@ -78,6 +78,7 @@ function Dashboard() {
     const [claims, setClaims] = useState([])
     const [notifications, setNotifications] = useState([])
     const [loading, setLoading] = useState(true)
+    const [receivedClaims, setReceivedClaims] = useState([])
 
     // redirect if not logged in
     useEffect(() => {
@@ -115,8 +116,42 @@ function Dashboard() {
             console.error('Notifications fetch error:', err)
             setNotifications([])
         }
+        // fetch claims on MY items
+        try {
+            // get all my posts first, then get claims for each
+            const postsRes2 = await api.get('/items/?my=true')
+            const myPosts = postsRes2.data.items || []
+            
+            const allReceivedClaims = []
+            for (const post of myPosts) {
+                try {
+                    const claimsRes = await api.get(`/claims/${post.id}`)
+                    const claims = claimsRes.data.claims || []
+                    // add item title to each claim
+                    claims.forEach(c => {
+                        allReceivedClaims.push({ ...c, item_title: post.title, item_id: post.id })
+                    })
+                } catch (err) {
+                    // no claims for this item
+                }
+            }
+            setReceivedClaims(allReceivedClaims)
+        } catch (err) {
+            console.error('Received claims error:', err)
+        }
 
         setLoading(false)
+    }
+
+    const respondToClaim = async (claimId, status) => {
+        try {
+            await api.put(`/claims/${claimId}/respond`, { status })
+            setReceivedClaims(prev => prev.map(c =>
+                c.id === claimId ? { ...c, status } : c
+            ))
+        } catch (err) {
+            console.error('Respond error:', err)
+        }
     }
 
     // mark notification as read
@@ -261,11 +296,18 @@ function Dashboard() {
                             onClick={() => setActiveTab('claims')}
                         />
                         <Tab
+                            label="Claims Received"
+                            active={activeTab === 'received'}
+                            count={receivedClaims.length}
+                            onClick={() => setActiveTab('received')}
+                        />
+                        <Tab
                             label="Notifications"
                             active={activeTab === 'notifications'}
                             count={unreadCount}
                             onClick={() => setActiveTab('notifications')}
                         />
+                        
                     </div>
                 </motion.div>
 
@@ -541,7 +583,121 @@ function Dashboard() {
                         </motion.div>
                     )}
 
-                </AnimatePresence>
+                {/* ── CLAIMS RECEIVED ── */}
+                {activeTab === 'received' && (
+                    <motion.div
+                        key="received"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        {receivedClaims.length === 0 ? (
+                            <EmptyState
+                                emoji="📭"
+                                title="No claims received"
+                                desc="Nobody has claimed your items yet"
+                            />
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {receivedClaims.map(claim => (
+                                    <motion.div
+                                        key={claim.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        style={{
+                                            background: 'var(--surface)',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '14px',
+                                            padding: '20px',
+                                        }}
+                                    >
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            marginBottom: '12px',
+                                        }}>
+                                            <div>
+                                                <h3 style={{
+                                                    fontSize: '16px',
+                                                    fontWeight: 700,
+                                                    color: 'var(--text)',
+                                                    marginBottom: '4px',
+                                                }}>
+                                                    {claim.claimant_name} wants your item
+                                                </h3>
+                                                <p style={{
+                                                    fontSize: '13px',
+                                                    color: 'var(--muted)',
+                                                }}>
+                                                    Item: {claim.item_title} · {new Date(claim.created_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <StatusBadge status={claim.status} />
+                                        </div>
+
+                                        {claim.message && (
+                                            <div style={{
+                                                background: 'var(--surface2)',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: '8px',
+                                                padding: '12px',
+                                                marginBottom: '16px',
+                                                fontSize: '14px',
+                                                color: 'var(--text)',
+                                                lineHeight: 1.6,
+                                            }}>
+                                                💬 "{claim.message}"
+                                            </div>
+                                        )}
+
+                                        {claim.status === 'pending' && (
+                                            <div style={{ display: 'flex', gap: '10px' }}>
+                                                <motion.button
+                                                    onClick={() => respondToClaim(claim.id, 'approved')}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    style={{
+                                                        background: 'rgba(46,213,115,0.1)',
+                                                        border: '1px solid rgba(46,213,115,0.4)',
+                                                        color: 'var(--found)',
+                                                        padding: '8px 20px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                    }}
+                                                >
+                                                    ✓ Approve
+                                                </motion.button>
+                                                <motion.button
+                                                    onClick={() => respondToClaim(claim.id, 'rejected')}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    style={{
+                                                        background: 'rgba(255,71,87,0.1)',
+                                                        border: '1px solid rgba(255,71,87,0.4)',
+                                                        color: 'var(--lost)',
+                                                        padding: '8px 20px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '14px',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                    }}
+                                                >
+                                                    ✗ Reject
+                                                </motion.button>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+
+            </AnimatePresence>
             </div>
         </div>
     )

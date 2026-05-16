@@ -434,7 +434,7 @@ function ItemDetail() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             padding: '24px',
-                            zIndex: 200,
+                            zIndex: 99999,
                         }}
                         onClick={(e) => {
                             // close modal if clicking backdrop
