@@ -8,6 +8,7 @@ function Login() {
     const [form, setForm] = useState({ email: '', password: '' })
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     const { login } = useAuth()
     const navigate = useNavigate()
 
@@ -161,27 +162,47 @@ function Login() {
                             }}>
                                 Password
                             </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={form.password}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                required
-                                style={{
-                                    width: '100%',
-                                    background: 'var(--surface2)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '10px',
-                                    padding: '12px 16px',
-                                    fontSize: '15px',
-                                    color: 'var(--text)',
-                                    outline: 'none',
-                                    transition: 'border-color 0.2s',
-                                }}
-                                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                            />
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        background: 'var(--surface2)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '10px',
+                                        padding: '12px 44px 12px 16px',
+                                        fontSize: '15px',
+                                        color: 'var(--text)',
+                                        outline: 'none',
+                                        transition: 'border-color 0.2s',
+                                    }}
+                                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+                                    onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '12px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        color: 'var(--muted)',
+                                        fontSize: '16px',
+                                        padding: '4px',
+                                    }}
+                                >
+                                    {showPassword ? '🙈' : '👁️'}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Submit */}

@@ -14,6 +14,9 @@ function Register() {
     })
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
+    const [confirmPassword, setConfirmPassword] = useState('')
     const { login } = useAuth()
     const navigate = useNavigate()
 
@@ -26,6 +29,11 @@ function Register() {
         e.preventDefault()
         setLoading(true)
         setError('')
+        if (form.password !== confirmPassword) {
+        setError('Passwords do not match')
+        setLoading(false)
+        return
+}
 
         try {
             const res = await api.post('/auth/register', form)
@@ -225,20 +233,84 @@ function Register() {
                             </div>
                         </div>
 
-                        {/* Password */}
-                        <div style={{ marginBottom: '28px' }}>
-                            <label style={labelStyle}>Password</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={form.password}
-                                onChange={handleChange}
-                                placeholder="Min 6 characters"
-                                required
-                                style={inputStyle}
-                                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                            />
+                        {/* Password + Confirm side by side */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '16px',
+                            marginBottom: '28px',
+                        }}>
+                            <div>
+                                <label style={labelStyle}>Password</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={form.password}
+                                        onChange={handleChange}
+                                        placeholder="Min 6 chars"
+                                        required
+                                        style={{
+                                            ...inputStyle,
+                                            padding: '12px 44px 12px 16px',
+                                        }}
+                                        onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+                                        onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: 'var(--muted)',
+                                            fontSize: '14px',
+                                        }}
+                                    >
+                                        {showPassword ? '🙈' : '👁️'}
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label style={labelStyle}>Confirm</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type={showConfirm ? 'text' : 'password'}
+                                        value={confirmPassword}
+                                        onChange={e => setConfirmPassword(e.target.value)}
+                                        placeholder="Repeat"
+                                        required
+                                        style={{
+                                            ...inputStyle,
+                                            padding: '12px 44px 12px 16px',
+                                        }}
+                                        onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+                                        onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirm(!showConfirm)}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: 'var(--muted)',
+                                            fontSize: '14px',
+                                        }}
+                                    >
+                                        {showConfirm ? '🙈' : '👁️'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Submit */}
