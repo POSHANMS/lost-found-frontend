@@ -93,20 +93,30 @@ function Dashboard() {
     const fetchAll = async () => {
         setLoading(true)
         try {
-            // fetch all three in parallel — faster than one by one
-            const [postsRes, claimsRes, notifsRes] = await Promise.all([
-                api.get('/items/?my=true'),
-                api.get('/claims/mine'),
-                api.get('/notifications/'),
-            ])
+            // fetch each separately so one failure doesn't kill the others
+            const postsRes = await api.get('/items/?my=true')
             setPosts(postsRes.data.items || [])
+        } catch (err) {
+            console.error('Posts fetch error:', err)
+        }
+
+        try {
+            const claimsRes = await api.get('/claims/mine')
             setClaims(claimsRes.data.claims || [])
+        } catch (err) {
+            console.error('Claims fetch error:', err)
+            setClaims([])
+        }
+
+        try {
+            const notifsRes = await api.get('/notifications/')
             setNotifications(notifsRes.data.notifications || [])
         } catch (err) {
-            console.error('Dashboard fetch error:', err)
-        } finally {
-            setLoading(false)
+            console.error('Notifications fetch error:', err)
+            setNotifications([])
         }
+
+        setLoading(false)
     }
 
     // mark notification as read
