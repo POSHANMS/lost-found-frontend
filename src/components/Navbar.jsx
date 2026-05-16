@@ -2,6 +2,26 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import useAuth from '../hooks/useAuth'
 
+function LogoB() {
+    return (
+        <div style={{
+            width: '36px', height: '36px',
+            background: '#F5A623',
+            borderRadius: '9px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+        }}>
+            <svg width="22" height="22" viewBox="-12 -12 24 24" fill="none">
+                <circle cx="0" cy="0" r="11" stroke="#0F0F1A" strokeWidth="1.8" opacity="0.3"/>
+                <circle cx="0" cy="0" r="7" stroke="#0F0F1A" strokeWidth="1.8" opacity="0.5"/>
+                <circle cx="0" cy="0" r="2.5" fill="#0F0F1A"/>
+                <line x1="0" y1="0" x2="9" y2="-6" stroke="#0F0F1A" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M 6.5 -4.5 A 11 11 0 0 1 11 0" fill="none" stroke="#0F0F1A" strokeWidth="3.5" strokeLinecap="round" opacity="0.35"/>
+            </svg>
+        </div>
+    )
+}
+
 function Navbar() {
     const { user, logout } = useAuth()
     const navigate = useNavigate()
@@ -12,7 +32,6 @@ function Navbar() {
         navigate('/')
     }
 
-    // check if current path matches link — for active state
     const isActive = (path) => location.pathname === path
 
     return (
@@ -43,20 +62,9 @@ function Navbar() {
                 <Link to="/" style={{ textDecoration: 'none' }}>
                     <motion.div
                         whileHover={{ scale: 1.03 }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
                     >
-                        <div style={{
-                            width: '32px',
-                            height: '32px',
-                            background: 'var(--accent)',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '18px',
-                        }}>
-                            🔍
-                        </div>
+                        <LogoB />
                         <span style={{
                             fontFamily: 'Plus Jakarta Sans, sans-serif',
                             fontWeight: 800,
