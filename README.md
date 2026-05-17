@@ -9,7 +9,7 @@
 [![Leaflet](https://img.shields.io/badge/Leaflet.js-1.9-199900?style=for-the-badge&logo=leaflet)](https://leafletjs.com)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-Upload-3448C5?style=for-the-badge&logo=cloudinary)](https://cloudinary.com)
  
-> A professional campus lost & found platform built with React 18 + Vite. Students can report, find, and claim lost items with real-time notifications, image uploads, and an interactive map.
+> A professional campus lost & found platform built with React 18 + Vite. Students can report lost or found items with photos and map location, browse all reported items, submit claims with verification questions, and receive real-time notifications when their claim is approved or rejected. Built as a full-stack portfolio project demonstrating production-grade React development.
  
 ---
 
