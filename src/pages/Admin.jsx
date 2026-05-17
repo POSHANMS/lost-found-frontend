@@ -55,7 +55,7 @@ function Admin() {
 
     const banUser = async (userId, isBanned) => {
         try {
-            await api.put(`/admin/ban/${userId}`, { is_banned: !isBanned })
+            await api.put(`/admin/users/${userId}/ban`, { is_banned: !isBanned })
             setUsers(prev => prev.map(u =>
                 u.id === userId ? { ...u, is_banned: !isBanned } : u
             ))
