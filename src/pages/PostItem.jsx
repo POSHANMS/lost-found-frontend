@@ -35,7 +35,7 @@ function ClickHandler({ onLocationSelect }) {
 }
 
 function MapPicker({ onLocationSelect, selectedLat, selectedLng }) {
-    const defaultCenter = [12.9716, 77.5946]
+    const defaultCenter = [12.9758, 76.0343]
     const [searchQuery, setSearchQuery] = useState('')
     const [searching, setSearching] = useState(false)
     const [mapCenter, setMapCenter] = useState(defaultCenter)
@@ -138,22 +138,29 @@ function MapPicker({ onLocationSelect, selectedLat, selectedLng }) {
                     {searching ? '...' : '🔍'}
                 </button>
                 <button
-                    type="button"
-                    onClick={handleMyLocation}
-                    style={{
-                        background: 'var(--surface2)',
-                        color: 'var(--text)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        padding: '10px 14px',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                    }}
-                >
-                    📍 My Location
-                </button>
+                type="button"
+                onClick={() => {
+                    const lat = 12.9758
+                    const lng = 76.0343
+                    onLocationSelect(lat, lng)
+                    if (mapRef.current) {
+                        mapRef.current.setView([lat, lng], 17)
+                    }
+                }}
+                style={{
+                    background: 'var(--accent-dim)',
+                    color: 'var(--accent)',
+                    border: '1px solid rgba(245,166,35,0.3)',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                }}
+            >
+                🎓 My Campus
+            </button>
             </div>
 
             {/* Map */}

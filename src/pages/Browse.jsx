@@ -75,7 +75,8 @@ function ItemCard({ item }) {
                                 style={{
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: 'cover',
+                                    objectFit: 'contain',
+                                    mixBlendMode: 'multiply',
                                 }}
                             />
                         ) : (
@@ -178,7 +179,7 @@ function getCategoryEmoji(category) {
 // ── Main Browse page ────────────────────────────────────────────────────────
 function Browse() {
     const [items, setItems] = useState([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [search, setSearch] = useState('')
     const [searchInput, setSearchInput] = useState('')
     const [status, setStatus] = useState('')
@@ -413,17 +414,12 @@ function Browse() {
                     ))}
                 </div>
             ) : items.length === 0 ? (
-                // Empty state
                 <motion.div
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     style={{
-                        breakInside: 'avoid',
-                        marginBottom: '20px',
+                        textAlign: 'center',
+                        padding: '80px 24px',
                     }}
                 >
                     <div style={{ fontSize: '64px', marginBottom: '16px' }}>🔍</div>
@@ -458,12 +454,13 @@ function Browse() {
             ) : (
                 <AnimatePresence>
                     <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                        gap: '20px',
+                        columns: '4 240px',
+                        columnGap: '20px',
                     }}>
                         {items.map(item => (
-                            <ItemCard key={item.id} item={item} />
+                            <div key={item.id} style={{ breakInside: 'avoid', marginBottom: '20px' }}>
+                                <ItemCard item={item} />
+                            </div>
                         ))}
                     </div>
                 </AnimatePresence>

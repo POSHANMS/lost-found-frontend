@@ -24,7 +24,7 @@ function LogoIcon() {
 }
 
 function Navbar() {
-    const { user, logout, unreadCount } = useAuth()
+    const { user, logout, unreadCount, loading } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -138,7 +138,10 @@ function Navbar() {
 
                 {/* Auth Buttons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {!user ? (
+                    {loading ? (
+                        // show nothing while checking auth status
+                        <div style={{ width: '140px' }} />
+                    ) : !user ? (
                         <>
                             <Link to="/login" style={{ textDecoration: 'none' }}>
                                 <motion.button

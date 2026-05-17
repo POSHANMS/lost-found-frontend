@@ -5,7 +5,7 @@ import api from '../utils/api'
 import useAuth from '../hooks/useAuth'
 
 function Admin() {
-    const { user } = useAuth()
+    const { user, loading: authLoading } = useAuth()
     const navigate = useNavigate()
 
     const [activeTab, setActiveTab] = useState('stats')
@@ -16,10 +16,9 @@ function Admin() {
 
     // redirect if not admin
     useEffect(() => {
-        if (user && user.role !== 'admin') {
-            navigate('/')
-        }
-    }, [user])
+        if (!authLoading && !user) navigate('/login')
+        if (!authLoading && user && user.role !== 'admin') navigate('/')
+    }, [user, authLoading])
 
     useEffect(() => {
         if (!user || user.role !== 'admin') return

@@ -70,7 +70,7 @@ function StatusBadge({ status }) {
 
 // ── Main Dashboard ──────────────────────────────────────────────────────────
 function Dashboard() {
-    const { user } = useAuth()
+    const { user, loading: authLoading } = useAuth()
     const navigate = useNavigate()
 
     const [activeTab, setActiveTab] = useState('posts')
@@ -82,10 +82,9 @@ function Dashboard() {
 
     // redirect if not logged in
     useEffect(() => {
-        if (!user && !loading) navigate('/login')
-    }, [user, loading])
-
-    // fetch all data on load
+        if (!authLoading && !user) navigate('/login')
+    }, [user, authLoading])
+        // fetch all data on load
     useEffect(() => {
         if (!user) return
         fetchAll()

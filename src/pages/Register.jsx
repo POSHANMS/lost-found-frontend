@@ -40,7 +40,15 @@ function Register() {
             login(res.data.user, res.data.access_token)
             navigate('/browse')
         } catch (err) {
-            setError(err.response?.data?.error || 'Registration failed. Try again.')
+            const errData = err.response?.data
+            if (errData?.errors) {
+                // show first validation error
+                const firstField = Object.keys(errData.errors)[0]
+                const firstMsg = errData.errors[firstField][0]
+                setError(`${firstField}: ${firstMsg}`)
+            } else {
+                setError(errData?.error || 'Registration failed. Try again.')
+            }
         } finally {
             setLoading(false)
         }
