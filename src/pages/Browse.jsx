@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import api from '../utils/api'
@@ -186,15 +186,32 @@ function Browse() {
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [total, setTotal] = useState(0)
+    const sentinelRef = useRef(null)
+    const [hasMore, setHasMore] = useState(true)
 
     const categories = [
         'Electronics', 'Documents', 'Accessories',
         'Clothing', 'Keys', 'Bags', 'Other'
     ]
 
+    // reset and fetch when filters change
     useEffect(() => {
-        fetchItems()
-    }, [status, category, page, search])
+        fetchItems(true)
+    }, [status, category, search])
+
+    // infinite scroll — watch the sentinel element
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loading) {
+                    fetchItems()
+                }
+            },
+            { threshold: 0.1 }
+        )
+        if (sentinelRef.current) observer.observe(sentinelRef.current)
+        return () => observer.disconnect()
+    }, [hasMore, loading, sentinelRef.current])
 
     // debounce search — wait 500ms after user stops typing
     useEffect(() => {
@@ -205,19 +222,31 @@ function Browse() {
         return () => clearTimeout(timer)
     }, [searchInput])
 
-    const fetchItems = async () => {
+    const fetchItems = async (reset = false) => {
+        if (loading) return
         setLoading(true)
         try {
             const params = new URLSearchParams()
             if (status) params.append('status', status)
             if (category) params.append('category', category)
             if (search) params.append('search', search)
-            params.append('page', page)
+            params.append('page', reset ? 1 : page)
 
             const res = await api.get(`/items/?${params}`)
-            setItems(res.data.items)
-            setTotalPages(res.data.pages)
+            const newItems = res.data.items || []
+
+            // if reset (filter changed) replace items, otherwise append
+            if (reset) {
+                setItems(newItems)
+                setPage(2)
+            } else {
+                setItems(prev => [...prev, ...newItems])
+                setPage(prev => prev + 1)
+            }
+
             setTotal(res.data.total)
+            setTotalPages(res.data.pages)
+            setHasMore(res.data.current_page < res.data.pages)
         } catch (err) {
             console.error('Failed to fetch items:', err)
         } finally {
@@ -440,35 +469,30 @@ function Browse() {
                 </AnimatePresence>
             )}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} style={{ height: '40px', marginTop: '20px' }} />
+
+            {/* Loading more indicator */}
+            {loading && items.length > 0 && (
                 <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    marginTop: '40px',
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: 'var(--muted)',
+                    fontSize: '14px',
                 }}>
-                    {[...Array(totalPages)].map((_, i) => (
-                        <motion.button
-                            key={i}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setPage(i + 1)}
-                            style={{
-                                width: '36px',
-                                height: '36px',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                background: page === i + 1 ? 'var(--accent)' : 'var(--surface)',
-                                color: page === i + 1 ? '#0F0F1A' : 'var(--muted)',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                            }}
-                        >
-                            {i + 1}
-                        </motion.button>
-                    ))}
+                    Loading more...
+                </div>
+            )}
+
+            {/* End of results */}
+            {!hasMore && items.length > 0 && (
+                <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: 'var(--muted)',
+                    fontSize: '13px',
+                }}>
+                    — You've seen all {total} items —
                 </div>
             )}
 
