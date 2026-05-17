@@ -12,12 +12,13 @@
 > A professional campus lost & found platform built with React 18 + Vite. Students can report, find, and claim lost items with real-time notifications, image uploads, and an interactive map.
  
 ---
- 
+
 ## 🔗 Live Demo
- 
-> **Frontend:** [https://findit-campus.vercel.app](https://findit-campus.vercel.app)
+
+> **Live Demo:** [https://findit-portal.vercel.app](https://findit-portal.vercel.app)
+> **Backend API:** [https://findit-backend-smpr.onrender.com](https://findit-backend-smpr.onrender.com)
 > **Backend Repo:** [https://github.com/POSHANMS/lost-found-backend](https://github.com/POSHANMS/lost-found-backend)
- 
+
 ---
  
 ## ✨ Features
