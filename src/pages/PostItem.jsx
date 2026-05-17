@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '../utils/api'
 import useAuth from '../hooks/useAuth'
@@ -188,6 +188,9 @@ function PostItem() {
     const fileInputRef = useRef(null)
     const navigate = useNavigate()
     const { user } = useAuth()
+    const [searchParams] = useSearchParams()
+    const editId = searchParams.get('edit')  // null if creating, item id if editing
+    const isEdit = !!editId
 
     // current step — 0, 1, or 2
     const [step, setStep] = useState(0)
@@ -209,6 +212,29 @@ function PostItem() {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+
+    // if editing, load existing item data
+        useEffect(() => {
+            if (!editId) return
+            api.get(`/items/${editId}`)
+                .then(res => {
+                    const item = res.data
+                    setForm({
+                        title: item.title || '',
+                        description: item.description || '',
+                        category: item.category || '',
+                        status: item.status || 'lost',
+                        location_name: item.location || '',
+                        latitude: item.latitude || null,
+                        longitude: item.longitude || null,
+                        image_url: item.image_url || '',
+                        image_public_id: '',
+                        verification_question: item.verification_question || '',
+                        verification_answer: '',
+                    })
+                })
+                .catch(() => setError('Failed to load item'))
+        }, [editId])
 
     // update any field by name
     const handleChange = (e) => {
@@ -261,10 +287,25 @@ function PostItem() {
             if (form.image_url) formData.append('image_url', form.image_url)
             if (form.image_public_id) formData.append('image_public_id', form.image_public_id)
 
+            if (isEdit) {
+            await api.put(`/items/${editId}`, {
+                title: form.title,
+                description: form.description,
+                category: form.category,
+                status: form.status,
+                location: form.location_name,
+                latitude: form.latitude,
+                longitude: form.longitude,
+                image_url: form.image_url,
+                verification_question: form.verification_question,
+                verification_answer: form.verification_answer || undefined,
+            })
+        } else {
             await api.post('/items/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             })
-            navigate('/browse')
+        }
+        navigate('/dashboard')
         } catch (err) {
             setError(err.response?.data?.error ||
                     JSON.stringify(err.response?.data?.errors) ||
@@ -359,16 +400,16 @@ function PostItem() {
                     style={{ marginBottom: '32px' }}
                 >
                     <h1 style={{
-                        fontSize: '28px',
-                        fontWeight: 800,
-                        letterSpacing: '-0.5px',
-                        marginBottom: '8px',
-                    }}>
-                        Post an Item
-                    </h1>
-                    <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
-                        Help your campus community find lost belongings
-                    </p>
+                    fontSize: '28px',
+                    fontWeight: 800,
+                    letterSpacing: '-0.5px',
+                    marginBottom: '8px',
+                }}>
+                    {isEdit ? 'Edit Item' : 'Post an Item'}
+                </h1>
+                <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
+                    {isEdit ? 'Update your item details' : 'Help your campus community find lost belongings'}
+                </p>
                 </motion.div>
 
                 {/* Step indicator */}
@@ -893,7 +934,9 @@ function PostItem() {
                             }}
                         >
                             {step === 2
-                                ? (loading ? 'Posting...' : 'Post Item →')
+                                ? (loading
+                                    ? (isEdit ? 'Saving...' : 'Posting...')
+                                    : (isEdit ? 'Save Changes →' : 'Post Item →'))
                                 : 'Continue →'
                             }
                         </motion.button>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { socket } from './utils/api'
@@ -112,8 +112,60 @@ function AppContent() {
                 <Route path="/item/:id" element={<ItemDetail />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </>
+    )
+}
+
+function NotFound() {
+    return (
+        <div style={{
+            minHeight: '100vh',
+            background: 'var(--bg)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '16px',
+            textAlign: 'center',
+            padding: '24px',
+        }}>
+            <div style={{ fontSize: '80px' }}>🔍</div>
+            <h1 style={{
+                fontSize: '32px',
+                fontWeight: 800,
+                color: 'var(--text)',
+            }}>
+                Page not found
+            </h1>
+            <p style={{
+                color: 'var(--muted)',
+                fontSize: '16px',
+                maxWidth: '400px',
+            }}>
+                The page you're looking for doesn't exist or has been moved.
+            </p>
+            <Link to="/" style={{ textDecoration: 'none' }}>
+                <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{
+                        background: 'var(--accent)',
+                        color: '#0F0F1A',
+                        border: 'none',
+                        padding: '12px 28px',
+                        borderRadius: '10px',
+                        fontSize: '15px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        marginTop: '8px',
+                    }}
+                >
+                    Go Home →
+                </motion.button>
+            </Link>
+        </div>
     )
 }
 

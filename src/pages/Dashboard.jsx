@@ -187,7 +187,12 @@ function Dashboard() {
         } catch (err) {
             console.error('Failed to mark resolved:', err)
         }
-}
+    }
+    const editPost = (itemId) => {
+        navigate(`/post?edit=${itemId}`)
+    }
+
+
 
     const unreadCount = notifications.filter(n => !n.is_read).length
 
@@ -439,6 +444,21 @@ function Dashboard() {
                                                     }}
                                                 >
                                                     Delete
+                                                </button>
+                                                <button
+                                                    onClick={() => editPost(post.id)}
+                                                    style={{
+                                                        background: 'var(--surface2)',
+                                                        border: '1px solid var(--border)',
+                                                        color: 'var(--text)',
+                                                        padding: '7px 14px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 500,
+                                                        cursor: 'pointer',
+                                                    }}
+                                                >
+                                                    Edit
                                                 </button>
                                             </div>
                                             {!post.is_resolved && (
